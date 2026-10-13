@@ -1,0 +1,139 @@
+Here are simple Java code examples for Classification and Clustering in WEKA. You can run them in a Java IDE with the WEKA library installed.
+
+## 1\. Classification using J48 Decision Tree
+
+Classification predicts a class label, such as whether the weather is suitable for playing golf.
+
+Java code:
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.classifiers.trees.J48;
+import weka.classifiers.Evaluation;
+
+import java.util.Random;
+
+public class ClassificationExample {
+    public static void main(String[] args) throws Exception {
+
+        // Load dataset
+        DataSource source =
+            new DataSource("data/weather.nominal.arff");
+        Instances data = source.getDataSet();
+
+        // Set the last attribute as class
+        data.setClassIndex(data.numAttributes() - 1);
+
+        // Create J48 decision tree
+        J48 tree = new J48();
+        tree.buildClassifier(data);
+
+        // Evaluate using 10-fold cross-validation
+        Evaluation eval = new Evaluation(data);
+        eval.crossValidateModel(
+            tree, data, 10, new Random(1)
+        );
+
+        // Display results
+        System.out.println("Decision Tree:");
+        System.out.println(tree);
+        System.out.println(eval.toSummaryString());
+        System.out.println(eval.toClassDetailsString());
+        System.out.println(eval.toMatrixString());
+    }
+}
+```
+
+Output includes:
+
+- Decision tree rules.
+- Correctly and incorrectly classified instances.
+- Accuracy and error rate.
+- Precision, recall, and F-measure.
+- Confusion matrix.
+
+Algorithm: J48 Decision Tree.
+
+## 2\. Clustering using Simple K-Means
+
+Clustering groups similar data points without requiring predefined class labels. For example, the Iris dataset can be divided into three clusters.
+
+Java code:
+
+java
+```
+
+import weka.core.Instances;
+import weka.core.converters.ConverterUtils.DataSource;
+import weka.clusterers.SimpleKMeans;
+
+public class ClusteringExample {
+    public static void main(String[] args) throws Exception {
+
+        // Load dataset
+        DataSource source =
+            new DataSource("data/iris.arff");
+        Instances data = source.getDataSet();
+
+        // Remove the class attribute for unsupervised clustering
+        data.setClassIndex(data.numAttributes() - 1);
+        weka.filters.unsupervised.attribute.Remove remove =
+            new weka.filters.unsupervised.attribute.Remove();
+        remove.setAttributeIndices("last");
+        remove.setInputFormat(data);
+        data = weka.filters.Filter.useFilter(data, remove);
+
+        // Create K-Means model
+        SimpleKMeans kmeans = new SimpleKMeans();
+        kmeans.setNumClusters(3);
+        kmeans.setSeed(10);
+        kmeans.buildClusterer(data);
+
+        // Display results
+        System.out.println("K-Means Clustering Results:");
+        System.out.println(kmeans);
+        System.out.println("Number of clusters: "
+            + kmeans.numberOfClusters());
+
+        // Display cluster assignment for each instance
+        for (int i = 0; i < data.numInstances(); i++) {
+            int cluster = kmeans.clusterInstance(data.instance(i));
+            System.out.println(
+                "Instance " + (i + 1)
+                + " belongs to cluster " + cluster
+            );
+        }
+    }
+}
+```
+
+Output includes:
+
+- Three cluster centroids.
+- Number of instances in each cluster.
+- Cluster assignment for each record.
+
+Algorithm: Simple K-Means.
+
+## 3\. Difference between classification and clustering
+
+| Classification | Clustering |
+| --- | --- |
+| Supervised learning | Unsupervised learning |
+| Uses labeled data | Does not require class labels |
+| Predicts a known class | Groups similar records |
+| Example: J48 | Example: K-Means |
+| Evaluated using accuracy and precision | Evaluated using measures such as silhouette score |
+
+## 4\. How to run the programs
+
+1. Install Java and download the WEKA toolkit.
+2. Create a Java project in Eclipse, IntelliJ IDEA, or NetBeans.
+3. Add the WEKA JAR file to your project's dependencies.
+4. Use the correct path to `weather.nominal.arff` or `iris.arff` from your WEKA installation.
+5. Run `ClassificationExample` or `ClusteringExample`.
+
+Note: The code uses WEKA's Java API, rather than the graphical Explorer interface. In classification, the last attribute is treated as the target class; in clustering, it is removed so that the grouping does not use the known species labels.
